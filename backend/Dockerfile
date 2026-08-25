@@ -28,8 +28,11 @@ RUN npm ci --omit=dev
 # Copy compiled application
 COPY --from=builder /app/dist ./dist
 
-# Railway will provide PORT at runtime
+# Copy runtime JSON configuration that TypeScript does not compile
+COPY --from=builder /app/src/config/swagger.json ./dist/src/config/swagger.json
+
+# Railway provides PORT at runtime
 EXPOSE 3001
 
 # Start backend
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/src/server.js"]
