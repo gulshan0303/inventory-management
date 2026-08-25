@@ -1,17 +1,8 @@
-import { Kafka } from 'kafkajs';
 import { InventoryEventSchema } from '../../validators/kafkaEvents';
 import { InventoryService } from '../../services/inventory.service';
 import { IdempotencyRepository } from '../../repositories/idempotency.repository';
 import { EventRepository } from '../../repositories/event.repository';
-import dotenv from 'dotenv';
-import path from 'path';
-
-dotenv.config({ path: path.resolve(__dirname, '../../../../.env') });
-
-const kafka = new Kafka({
-  clientId: process.env.KAFKA_CLIENT_ID || 'inventory-backend',
-  brokers: (process.env.KAFKA_BROKERS || 'localhost:9092').split(','),
-});
+import { kafka } from '../config';
 
 const consumer = kafka.consumer({
   groupId: process.env.KAFKA_GROUP_ID || 'inventory-consumer-group',
@@ -164,5 +155,14 @@ export const startKafkaConsumer = async () => {
     });
   } catch (err) {
     console.error('Failed to start Kafka consumer', err);
+  }
+};
+
+export const disconnectKafkaConsumer = async (): Promise<void> => {
+  try {
+    await consumer.disconnect();
+    console.log('Kafka Consumer disconnected');
+  } catch (error) {
+    console.error('Failed to disconnect Kafka consumer:', error);
   }
 };

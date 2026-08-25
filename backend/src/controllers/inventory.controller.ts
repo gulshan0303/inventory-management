@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { QueryRepository } from '../repositories/query.repository';
-import { getKafkaProducer, kafka } from '../kafka/producer';
+import { getKafkaProducer } from '../kafka/producer';
+import { kafka } from '../kafka/config';
 import { EventRepository } from '../repositories/event.repository';
 import { randomUUID } from 'crypto';
 import { z } from 'zod';

@@ -26,7 +26,35 @@ setupSwagger(app);
 
 app.use(errorHandler);
 
-app.listen(PORT, async () => {
+import { disconnectKafkaConsumer } from './kafka/consumer';
+import { disconnectKafkaProducer } from './kafka/producer';
+import { pool } from './config/db';
+
+const server = app.listen(PORT, '0.0.0.0', async () => {
   console.log(`Server running on port ${PORT}`);
-  await startKafkaConsumer();
+  try {
+    await startKafkaConsumer();
+    console.log('Kafka consumer started successfully');
+  } catch (error) {
+    console.error('Failed to start Kafka consumer. Event processing will be disabled until Kafka is available.', error);
+  }
 });
+
+const gracefulShutdown = async () => {
+  console.log('Initiating graceful shutdown...');
+  server.close(() => console.log('HTTP server closed'));
+  
+  await disconnectKafkaConsumer();
+  await disconnectKafkaProducer();
+  
+  if (pool) {
+    await pool.end();
+    console.log('Database pool closed');
+  }
+  
+  process.exit(0);
+};
+
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGINT', gracefulShutdown);
+
