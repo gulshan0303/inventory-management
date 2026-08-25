@@ -1,0 +1,433 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Inventory Management System API Documentation",
+    "version": "1.0.0",
+    "description": "API documentation for the Inventory Management System with FIFO costing, Kafka events, and system health monitoring."
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "API base path"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter the JWT token obtained from logging in."
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "description": "Authenticates user and returns a JWT token. Default credentials: admin / admin123.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "password"],
+                "properties": {
+                  "username": { "type": "string", "example": "admin" },
+                  "password": { "type": "string", "example": "admin123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": false },
+                    "message": { "type": "string", "example": "Invalid credentials" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Get All Products",
+        "description": "Retrieves list of all products defined in the database.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "List of products",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "product_id": { "type": "string", "example": "PRD001" },
+                          "name": { "type": "string", "example": "Premium Widget" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inventory": {
+      "get": {
+        "summary": "Get Inventory Overview",
+        "description": "Retrieves stock quantities and aggregated FIFO values for all products.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Inventory status overview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "product_id": { "type": "string", "example": "PRD001" },
+                          "name": { "type": "string", "example": "Premium Widget" },
+                          "current_quantity": { "type": "integer", "example": 100 },
+                          "total_inventory_cost": { "type": "string", "example": "12600.00" },
+                          "average_cost_per_unit": { "type": "string", "example": "126.00" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/inventory/{productId}": {
+      "get": {
+        "summary": "Get Single Product Inventory",
+        "description": "Retrieves inventory metrics for a specific product ID.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "PRD001"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product inventory overview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "product_id": { "type": "string", "example": "PRD001" },
+                        "name": { "type": "string", "example": "Premium Widget" },
+                        "current_quantity": { "type": "integer", "example": 100 },
+                        "total_inventory_cost": { "type": "string", "example": "12600.00" },
+                        "average_cost_per_unit": { "type": "string", "example": "126.00" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found"
+          }
+        }
+      }
+    },
+    "/transactions": {
+      "get": {
+        "summary": "Get Transaction Ledger",
+        "description": "Returns a paginated log of all purchase batches and sales.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer", "default": 1 } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Paginated transaction list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": { "type": "string", "format": "uuid" },
+                          "product_id": { "type": "string", "example": "PRD001" },
+                          "transaction_type": { "type": "string", "example": "purchase" },
+                          "quantity": { "type": "integer", "example": 50 },
+                          "unit_price": { "type": "string", "example": "100.0000" },
+                          "total_cost": { "type": "string", "example": "5000.0000" },
+                          "timestamp": { "type": "string", "format": "date-time" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Submit Transaction Event",
+        "description": "Publishes a purchase or sale transaction event into Kafka for asynchronous processing.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["product_id", "event_type", "quantity"],
+                "properties": {
+                  "product_id": { "type": "string", "example": "PRD001" },
+                  "event_type": { "type": "string", "enum": ["purchase", "sale"], "example": "purchase" },
+                  "quantity": { "type": "integer", "example": 50 },
+                  "unit_price": { "type": "number", "example": 100.00, "description": "Required only for purchase event type" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event successfully published to Kafka",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "event_id": { "type": "string", "format": "uuid" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transactions/{id}": {
+      "get": {
+        "summary": "Get Transaction FIFO Breakdown",
+        "description": "Fetches FIFO allocation and batch details for a specific sale transaction.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "6cb7f3e8-5d27-4bf7-9a8c-a1d2e3f4b5c6"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "FIFO breakdown for sale",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "string", "format": "uuid" },
+                        "productId": { "type": "string", "example": "PRD001" },
+                        "quantity": { "type": "integer", "example": 60 },
+                        "totalCost": { "type": "number", "example": 6200.00 },
+                        "soldAt": { "type": "string", "format": "date-time" },
+                        "allocations": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "batchId": { "type": "string", "format": "uuid" },
+                              "quantity": { "type": "integer", "example": 50 },
+                              "unitCost": { "type": "number", "example": 100.00 },
+                              "totalCost": { "type": "number", "example": 5000.00 },
+                              "remainingQuantity": { "type": "integer", "example": 0 }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Details requested for purchase (not a sale) transaction"
+          },
+          "404": {
+            "description": "Transaction not found"
+          }
+        }
+      }
+    },
+    "/events/{eventId}/status": {
+      "get": {
+        "summary": "Get Event Processing Status",
+        "description": "Retrieves the progress/status of a Kafka event through its stages (PUBLISHED -> CONSUMED -> VALIDATED -> FIFO_PROCESSED -> DATABASE_COMMITTED).",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          {
+            "name": "eventId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" },
+            "example": "f7d3a2e1-a37f-4f51-873b-489cd34ef234"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Event processing status details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "eventId": { "type": "string", "format": "uuid" },
+                        "status": { "type": "string", "example": "SUCCESS" },
+                        "eventType": { "type": "string", "example": "sale" },
+                        "productId": { "type": "string", "example": "PRD001" },
+                        "quantity": { "type": "integer", "example": 60 },
+                        "steps": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "name": { "type": "string", "example": "PUBLISHED" },
+                              "status": { "type": "string", "example": "SUCCESS" },
+                              "error": { "type": "string", "nullable": true }
+                            }
+                          }
+                        },
+                        "errorMessage": { "type": "string", "nullable": true }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event ID not found"
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Check API and Service Health",
+        "description": "Performs system health checks on API, PostgreSQL connection, and Kafka reachability.",
+        "responses": {
+          "200": {
+            "description": "All services healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "status": { "type": "string", "example": "healthy" },
+                        "services": {
+                          "type": "object",
+                          "properties": {
+                            "api": { "type": "object", "properties": { "status": { "type": "string", "example": "healthy" } } },
+                            "database": { "type": "object", "properties": { "status": { "type": "string", "example": "healthy" } } },
+                            "kafka": { "type": "object", "properties": { "status": { "type": "string", "example": "healthy" } } }
+                          }
+                        },
+                        "timestamp": { "type": "string", "format": "date-time" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Critical services down (e.g. Database or Kafka disconnected)"
+          }
+        }
+      }
+    }
+  }
+}
