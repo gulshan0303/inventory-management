@@ -9,16 +9,16 @@ interface EventStep {
 }
 
 interface EventStatus {
-  event_id: string;
+  eventId: string;
   status: "PENDING" | "PROCESSING" | "SUCCESS" | "FAILED";
-  event_type: "purchase" | "sale";
-  product_id: string;
+  eventType: "purchase" | "sale";
+  productId: string;
   quantity: number;
-  unit_price: string | null;
+  unitPrice: string | null;
   steps: EventStep[];
-  error_message: string | null;
-  created_at: string;
-  updated_at: string;
+  errorMessage: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 const STEP_LABELS: Record<string, string> = {
@@ -64,13 +64,24 @@ export default function EventStatusTracker({ eventId, onClose }: { eventId: stri
 
   return (
     <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", display: "flex",
-      alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px"
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", 
+      backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+      display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px"
     }}>
-      <div className="glass-panel" style={{ padding: "32px", width: "100%", maxWidth: "520px" }}>
+      <div className="glass-panel" style={{ 
+        padding: "32px", width: "100%", maxWidth: "520px",
+        background: "rgba(15, 23, 42, 0.95)", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+        border: "1px solid rgba(255, 255, 255, 0.1)"
+      }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
           <h3 style={{ fontSize: "18px", fontWeight: 600 }}>📡 Event Status Tracker</h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-secondary)", cursor: "pointer", fontSize: "20px" }}>✕</button>
+          <button onClick={onClose} style={{
+            background: "rgba(255,255,255,0.05)", border: "none", color: "var(--text-secondary)",
+            fontSize: "20px", cursor: "pointer", width: "32px", height: "32px", borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center", transition: "var(--transition)"
+          }} onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.1)"} onMouseOut={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}>
+            ✕
+          </button>
         </div>
 
         {loading && <p style={{ color: "var(--text-secondary)", textAlign: "center" }}>Loading event status...</p>}
@@ -79,17 +90,17 @@ export default function EventStatusTracker({ eventId, onClose }: { eventId: stri
         {data && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "24px", fontSize: "13px" }}>
-              <div><span style={{ color: "var(--text-secondary)" }}>Event ID: </span><span style={{ fontFamily: "monospace", fontSize: "11px" }}>{data.event_id.slice(0, 20)}...</span></div>
+              <div><span style={{ color: "var(--text-secondary)" }}>Event ID: </span><span style={{ fontFamily: "monospace", fontSize: "11px" }}>{data.eventId?.slice(0, 20)}...</span></div>
               <div><span style={{ color: "var(--text-secondary)" }}>Type: </span>
                 <span style={{
                   padding: "2px 8px", borderRadius: "4px", fontWeight: 600, fontSize: "11px",
-                  background: data.event_type === "purchase" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-                  color: data.event_type === "purchase" ? "var(--success)" : "var(--danger)"
-                }}>{data.event_type.toUpperCase()}</span>
+                  background: data.eventType === "purchase" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+                  color: data.eventType === "purchase" ? "var(--success)" : "var(--danger)"
+                }}>{data.eventType?.toUpperCase()}</span>
               </div>
-              <div><span style={{ color: "var(--text-secondary)" }}>Product: </span>{data.product_id}</div>
+              <div><span style={{ color: "var(--text-secondary)" }}>Product: </span>{data.productId}</div>
               <div><span style={{ color: "var(--text-secondary)" }}>Qty: </span>{data.quantity}</div>
-              {data.unit_price && <div><span style={{ color: "var(--text-secondary)" }}>Unit Price: </span>${parseFloat(data.unit_price).toFixed(2)}</div>}
+              {data.unitPrice && <div><span style={{ color: "var(--text-secondary)" }}>Unit Price: </span>${parseFloat(data.unitPrice).toFixed(2)}</div>}
               <div><span style={{ color: "var(--text-secondary)" }}>Status: </span>
                 <span style={{ color: statusColor[data.status], fontWeight: 600 }}>{data.status}</span>
               </div>
@@ -98,7 +109,7 @@ export default function EventStatusTracker({ eventId, onClose }: { eventId: stri
             <div style={{ borderTop: "1px solid var(--border-color)", paddingTop: "20px" }}>
               <p style={{ fontSize: "13px", color: "var(--text-secondary)", marginBottom: "16px" }}>Pipeline Progress</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                {data.steps.map((step, i) => (
+                {data.steps?.map((step, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <div style={{
                       width: "28px", height: "28px", borderRadius: "50%", display: "flex", alignItems: "center",
@@ -118,9 +129,9 @@ export default function EventStatusTracker({ eventId, onClose }: { eventId: stri
               </div>
             </div>
 
-            {data.error_message && (
+            {data.errorMessage && (
               <div style={{ marginTop: "16px", padding: "12px", background: "rgba(239,68,68,0.1)", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.2)" }}>
-                <p style={{ color: "var(--danger)", fontSize: "13px" }}>⚠️ {data.error_message}</p>
+                <p style={{ color: "var(--danger)", fontSize: "13px" }}>⚠️ {data.errorMessage}</p>
               </div>
             )}
           </>
