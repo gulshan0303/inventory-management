@@ -15,7 +15,7 @@ export default function DashboardHeader() {
       </div>
       <div style={{ display: "flex", gap: "16px" }}>
         <a 
-          href={(process.env.NEXT_PUBLIC_API_URL || "http://52.65.223.73:3001/api").replace('/api', '/api-docs')} 
+          href="http://52.65.223.73:3001/api-docs" 
           target="_blank" 
           rel="noopener noreferrer"
           className="btn-secondary" 
