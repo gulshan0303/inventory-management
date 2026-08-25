@@ -8,9 +8,9 @@ A production-quality Inventory Management System built with **Node.js + Express*
 
 | Layer | URL |
 |---|---|
-| **Frontend** | `<FRONTEND_URL>` |
-| **Backend API** | `<BACKEND_URL>` |
-| **API Documentation** | `<BACKEND_URL>/api-docs` |
+| **Frontend** | `https://inventory-management-iota-seven.vercel.app` |
+| **Backend API** | `http://52.65.223.73:3001` |
+| **API Documentation** | `http://52.65.223.73:3001/api-docs` |
 
 ### Demo Credentials
 
