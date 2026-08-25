@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg-dark: #0b0f19;
+  --bg-card: #151b2b;
+  --bg-card-hover: #1c2336;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --accent-primary: #3b82f6;
+  --accent-hover: #2563eb;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --border-color: #1e293b;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-glow: 0 0 15px rgba(59, 130, 246, 0.5);
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { box-sizing: border-box; padding: 0; margin: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.glass-panel {
+  background: rgba(21, 27, 43, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.input-field {
+  width: 100%;
+  padding: 12px 16px;
+  background-color: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  transition: var(--transition);
+  outline: none;
+}
+
+.input-field:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background-color: var(--accent-primary);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
