@@ -1,22 +1,31 @@
 import { getClient } from '../config/db';
 import { InventoryRepository } from '../repositories/inventory.repository';
 import { SalesRepository } from '../repositories/sales.repository';
+import { IdempotencyRepository } from '../repositories/idempotency.repository';
 import { FifoEngine } from './fifo.engine';
 
 export class InventoryService {
   public static async processPurchase(
+    eventId: string,
     productId: string,
     quantity: number,
     unitPrice: string | number,
     purchasedAt: Date
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await getClient();
     try {
       await client.query('BEGIN');
 
+      const isNew = await IdempotencyRepository.recordEvent(client, eventId);
+      if (!isNew) {
+        await client.query('ROLLBACK');
+        return false;
+      }
+
       await InventoryRepository.createBatch(client, productId, quantity, unitPrice, purchasedAt);
 
       await client.query('COMMIT');
+      return true;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;
@@ -26,13 +35,20 @@ export class InventoryService {
   }
 
   public static async processSale(
+    eventId: string,
     productId: string,
     quantity: number,
     soldAt: Date
-  ): Promise<void> {
+  ): Promise<boolean> {
     const client = await getClient();
     try {
       await client.query('BEGIN');
+
+      const isNew = await IdempotencyRepository.recordEvent(client, eventId);
+      if (!isNew) {
+        await client.query('ROLLBACK');
+        return false;
+      }
 
       const batches = await InventoryRepository.getAvailableBatchesForUpdate(client, productId);
 
@@ -61,6 +77,7 @@ export class InventoryService {
       await SalesRepository.createAllocations(client, saleId, fifoResult.allocations);
 
       await client.query('COMMIT');
+      return true;
     } catch (error) {
       await client.query('ROLLBACK');
       throw error;

@@ -81,35 +81,36 @@ export const startKafkaConsumer = async () => {
             await EventRepository.updateEventSteps(eventId, steps, 'PROCESSING');
           }
 
-          // Idempotency check via DB
-          const isNew = await IdempotencyRepository.recordEvent(event.event_id);
-          if (!isNew) {
-            console.log(`Duplicate event ${event.event_id} ignored.`);
-            if (eventId) {
-              const fifoStep = steps.find(s => s.name === 'FIFO_PROCESSED');
-              if (fifoStep) fifoStep.status = 'SUCCESS';
-              const dbStep = steps.find(s => s.name === 'DATABASE_COMMITTED');
-              if (dbStep) dbStep.status = 'SUCCESS';
-              await EventRepository.updateEventSteps(eventId, steps, 'SUCCESS');
-            }
-            return;
-          }
-
-          // Business Processing
+          // Business Processing with built-in Idempotency
           try {
+            let isNew = true;
             if (event.event_type === 'purchase') {
-              await InventoryService.processPurchase(
+              isNew = await InventoryService.processPurchase(
+                event.event_id,
                 event.product_id,
                 event.quantity,
                 event.unit_price,
                 new Date(event.timestamp)
               );
             } else if (event.event_type === 'sale') {
-              await InventoryService.processSale(
+              isNew = await InventoryService.processSale(
+                event.event_id,
                 event.product_id,
                 event.quantity,
                 new Date(event.timestamp)
               );
+            }
+
+            if (!isNew) {
+              console.log(`Duplicate event ${event.event_id} ignored.`);
+              if (eventId) {
+                const fifoStep = steps.find(s => s.name === 'FIFO_PROCESSED');
+                if (fifoStep) { fifoStep.status = 'SUCCESS'; delete fifoStep.error; }
+                const dbStep = steps.find(s => s.name === 'DATABASE_COMMITTED');
+                if (dbStep) { dbStep.status = 'SUCCESS'; delete dbStep.error; }
+                await EventRepository.updateEventSteps(eventId, steps, 'SUCCESS');
+              }
+              return;
             }
 
             if (eventId) {

@@ -236,6 +236,17 @@ Interactive documentation: **`<BACKEND_URL>/api-docs`** (Swagger UI)
 | `GET` | `/api-docs` | — | Swagger UI |
 | `GET` | `/api-docs/swagger.json` | — | Raw OpenAPI 3.0 specification |
 
+### How to Use Swagger UI
+
+1. Open your browser and navigate to `<BACKEND_URL>/api-docs` (e.g., `http://localhost:3001/api-docs` locally).
+2. Most endpoints require authentication. To get access:
+   - Scroll down to the `POST /api/auth/login` endpoint.
+   - Click **Try it out** and enter the demo credentials (`{"username": "admin", "password": "admin123"}`).
+   - Click **Execute** and copy the `token` string from the Response body.
+3. Scroll to the very top of the page and click the green **Authorize** button.
+4. Type `Bearer ` followed by a space and paste your token (e.g., `Bearer eyJhbG...`).
+5. Click **Authorize** and then **Close**. You can now test any protected endpoint by clicking **Try it out**!
+
 ### Event Payload (Kafka / `POST /api/transactions`)
 
 ```json
