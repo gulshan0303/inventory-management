@@ -522,3 +522,31 @@ inventory-management/
 | **Testing** | Jest, ts-jest |
 | **API Docs** | Swagger UI (OpenAPI 3.0) |
 | **Infrastructure** | Docker Compose |
+
+## 12. Assignment Requirements Checklist
+
+### Assignment Objective
+- [x] Build a fully working Inventory Management Tool using FIFO costing method.
+- [x] Inventory data flows through Kafka.
+- [x] Backend stores data with FIFO logic.
+- [x] Frontend shows real-time updates.
+
+### Required Tech Stack
+- [x] **Backend:** Node.js (Express.js) & TypeScript
+- [x] **Database:** PostgreSQL
+- [x] **Messaging:** Apache Kafka
+- [x] **Frontend:** React / Next.js
+
+### Required Functionality
+- [x] **Kafka Integration:** Created inventory-events topic, Producer publishes events, Consumer processes events on boot.
+- [x] **Database Models:** Implemented Products, Inventory Batches (purchases), Sales, and Allocations tables.
+- [x] **FIFO Logic:** On purchase, create batch. On sale, consume oldest batches first. Exact cost calculated and persisted.
+- [x] **Frontend UI:** Product Stock Overview (Qty, Cost, Avg Cost) and Transaction Ledger (time-series with FIFO cost).
+- [x] **Live Updates:** Dashboard auto-updates via real-time fetching.
+- [x] **Login Page:** Basic Auth with JWT implemented (Credentials: dmin / dmin123).
+
+### Deliverables Included
+- [x] **GitHub Repository:** Codebase structured and pushed.
+- [x] **Kafka Simulator:** 
+pm run simulator script included to publish dummy events and test the pipeline.
+- [x] **README.md:** Comprehensive documentation, local setup guide, and detailed FIFO logic explanation.
