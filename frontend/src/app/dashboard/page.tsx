@@ -4,8 +4,6 @@ import DashboardHeader from "@/components/DashboardHeader";
 import InventoryOverview from "@/components/InventoryOverview";
 import TransactionLedger from "@/components/TransactionLedger";
 import SimulatorPanel from "@/components/SimulatorPanel";
-import SystemHealth from "@/components/SystemHealth";
-
 export default function DashboardPage() {
   return (
     <div style={{ minHeight: "100vh", padding: "32px 20px", maxWidth: "1400px", margin: "0 auto" }}>
@@ -27,7 +25,6 @@ export default function DashboardPage() {
         {/* Right Column: Simulator & Health */}
         <section style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           <div>
-            <SystemHealth />
             <h2 style={{ fontSize: "20px", fontWeight: 600, color: "var(--text-primary)", marginBottom: "20px" }}>
               Simulation Panel
             </h2>
@@ -46,3 +43,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
