@@ -16,9 +16,8 @@ app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
-app.use('/api', inventoryRoutes);
-
 app.get('/api/health', InventoryController.getHealth);
+app.use('/api', inventoryRoutes);
 
 import { setupSwagger } from './config/swaggerSetup';
 
@@ -57,4 +56,5 @@ const gracefulShutdown = async () => {
 
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
+
 
