@@ -96,7 +96,7 @@ export default function SimulatorPanel({ onSimulate }: { onSimulate: () => void 
                   // Fetch the inventory stock for PRD001
                   const invRes = await fetchApi(`/inventory/PRD001`);
                   if (invRes && invRes.data) {
-                    actualResult = invRes.data.remaining_quantity;
+                    actualResult = parseInt(invRes.data.current_quantity, 10);
                     passed = actualResult === scenario.expectedValue;
                   }
                 }
@@ -374,3 +374,5 @@ export default function SimulatorPanel({ onSimulate }: { onSimulate: () => void 
     </div>
   );
 }
+
+
